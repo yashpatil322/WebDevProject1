@@ -44,3 +44,162 @@ c<!DOCTYPE html>
     <div class="preview-container" id="previewContainer"></div>
     <button type="submit">Submit All</button>
 </div>
+
+<script>
+  function showFollowUps() {
+    const section = document.getElementById("followUpSection");
+    section.style.display = "block";
+    section.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("show");
+  }
+
+  function checkImageCount(input) {
+    if (input.files.length > 4) {
+      alert("You can upload a maximum of 4 images.");
+      input.value = "";
+    }
+  }
+
+  let selectedImages = [];
+
+function handleImageSelection(event) {
+  const files = Array.from(event.target.files);
+  const previewContainer = document.getElementById("previewContainer");
+
+  // Filter out files that are already selected
+  const newFiles = files.filter(file => {
+    return !selectedImages.some(img => img.file.name === file.name && img.file.size === file.size);
+  });
+
+  if ((selectedImages.length + newFiles.length) > 4) {
+    alert("You can only upload up to 4 images.");
+    event.target.value = "";
+    return;
+  }
+
+  newFiles.forEach((file, index) => {
+    if (!file.type.startsWith("image/")) return;
+
+    const reader = new FileReader();
+    const id = `${Date.now()}-${index}`;
+
+    reader.onload = function (e) {
+      const imageDiv = document.createElement("div");
+      imageDiv.className = "preview-box";
+      imageDiv.id = `img-${id}`;
+
+      imageDiv.innerHTML = `
+        <button class="remove-btn" onclick="removeImage('${id}')">✖</button>
+        <div class="image-and-description">
+          <a href="${e.target.result}" target="_blank">
+            <img src="${e.target.result}" alt="preview" class="preview-img" />
+          </a>
+          <input type="text" class="image-description" placeholder="Enter caption..." />
+        </div>
+        <div class="progress-circle" id="progress-${id}">
+          <svg viewBox="0 0 36 36">
+            <path class="bg" d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="progress" stroke-dasharray="0, 100"
+              d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          </svg>
+          <div class="tick" id="tick-${id}">✅</div>
+        </div>
+      `;
+
+      previewContainer.appendChild(imageDiv);
+      selectedImages.push({ id, file });
+
+      simulateUpload(id);
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  // Clear file input to avoid duplicate issues
+  event.target.value = "";
+
+  updateImageCountDisplay(); // Optional, if you're showing count
+}
+
+function updateImageCountDisplay() {
+  const count = selectedImages.length;
+  document.getElementById("imageCount").textContent = 
+    count > 0 ? `${count} image${count > 1 ? 's' : ''} selected` : "";
+}
+
+
+
+  function simulateUpload(id) {
+    let percent = 0;
+    const interval = setInterval(() => {
+      const progressPath = document.querySelector(`#progress-${id} .progress`);
+      if (!progressPath) return;
+      percent += 5;
+      progressPath.setAttribute("stroke-dasharray", `${percent}, 100`);
+      if (percent >= 100) {
+        clearInterval(interval);
+        document.getElementById(`tick-${id}`).style.opacity = 1;
+
+        // Hide progress circle after completion
+        const progressCircle = document.getElementById(`progress-${id}`);
+        if (progressCircle) progressCircle.style.display = "none";
+      }
+    }, 80);
+  }
+
+function removeImage(id) {
+  document.getElementById(`img-${id}`).remove();
+  selectedImages = selectedImages.filter(img => img.id !== id);
+  updateImageCountDisplay();
+}
+
+
+document.getElementById("selectBtn").addEventListener("click", () => {
+  document.getElementById("images").click();
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("dairyForm").addEventListener("submit", function (e) {
+    console.log("Form is submitting...");
+    console.log("File input:", document.getElementById("images").files);
+
+    document.querySelectorAll(".dynamic-caption-input").forEach(el => el.remove());
+
+    selectedImages.forEach((img, index) => {
+      const captionInput = document.querySelector(`#img-${img.id} .image-description`);
+      const caption = captionInput ? captionInput.value : "";
+
+      const hiddenInput = document.createElement("input");
+      hiddenInput.type = "hidden";
+      hiddenInput.name = "image_captions[]";
+      hiddenInput.value = caption;
+      hiddenInput.classList.add("dynamic-caption-input");
+
+      this.appendChild(hiddenInput);
+    });
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
