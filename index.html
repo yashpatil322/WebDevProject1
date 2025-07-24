@@ -33,3 +33,14 @@ c<!DOCTYPE html>
     </div>
 </body>
 </html>
+
+
+<div class="image-upload-container">
+    <label for="images" class="upload-label">Upload up to 4 images (optional):</label>
+    <input type="file" id="images" name="images[]" multiple accept="image/*" hidden onchange="handleImageSelection(event)">
+    <button type="button" id="selectBtn">Choose Images</button>
+    <span id="imageCount"></span>
+    <p class="upload-note">Accepted formats: JPG, PNG. Max: 4 images.</p>
+    <div class="preview-container" id="previewContainer"></div>
+    <button type="submit">Submit All</button>
+</div>
